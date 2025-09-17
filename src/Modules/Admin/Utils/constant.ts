@@ -1,0 +1,1 @@
+export const baseUrl = "https://msatradesbackend-production.up.railway.app/api/v1/admin"  
