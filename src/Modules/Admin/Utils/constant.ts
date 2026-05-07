@@ -1,1 +1,1 @@
-export const baseUrl = "https://msatradesbackend-production.up.railway.app/api/v1/admin"  
+export const baseUrl = "http://localhost:3000/api/v1/admin"  

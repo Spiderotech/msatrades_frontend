@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import Logo from '../../../assets/Admin/images/logo/logo.svg';
 import adminAxios from '../Utils/axios';
 import { useDispatch } from "react-redux";
 import { login } from '../../User/Redux/reducer/AdminSlice'
