@@ -6,6 +6,7 @@ import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { useParams } from "react-router-dom";
 import adminAxios from "../../Admin/Utils/axios";
+import shopImage from "../../../assets/shop.png";
 
 const SubcategoryShopPage = () => {
     const { categoryName, subcategoryName } = useParams();
@@ -58,9 +59,9 @@ const SubcategoryShopPage = () => {
 
 
 
-    if (sortOption === "low-to-high") {
+    if (sortOption === "low-high") {
         filteredProducts = filteredProducts.sort((a, b) => a.basePrice - b.basePrice);
-    } else if (sortOption === "high-to-low") {
+    } else if (sortOption === "high-low") {
         filteredProducts = filteredProducts.sort((a, b) => b.basePrice - a.basePrice);
     }
 
@@ -75,18 +76,22 @@ const SubcategoryShopPage = () => {
     return (
         <>
             <Header />
-            <div className="relative bg-cover bg-center h-[350px] flex flex-col justify-center items-center text-white" style={{ backgroundImage: `url('https://cycles-cauchois.fr/wp-content/uploads/2023/11/h1-bannernew-jpg.webp')` }}>
-                <h1 className="text-4xl font-bold">{subcategoryName}</h1>
-                <p className="mt-2 text-sm">Home &gt; Shop &gt; {categoryName} &gt; {subcategoryName}</p>
+            <div
+                className="relative flex h-[350px] flex-col items-center justify-center overflow-hidden bg-cover bg-center text-white"
+                style={{ backgroundImage: `url(${shopImage})` }}
+            >
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/75 to-gray-950/20" />
+                <h1 className="relative z-10 text-4xl font-black">{subcategoryName}</h1>
+                <p className="relative z-10 mt-2 text-sm font-semibold">Home &gt; Shop &gt; {categoryName} &gt; {subcategoryName}</p>
             </div>
             <section className="container mx-auto px-4 py-10">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {/* Sidebar */}
                     <aside className="p-4 rounded-md md:col-span-1">
-                        <h3 className="text-lg font-bold flex items-center space-x-2  p-5 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
-                            <FaFilter /> <span>FILTER BY</span>
+                        <h3 className="text-lg font-bold flex items-center space-x-2 p-5 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                            <FaFilter className="text-orange-500" /> <span>FILTER BY</span>
                         </h3>
-                        <div className="mt-6 p-5 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div className="mt-6 p-5 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                             <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-4 text-lg">
                                 Price
                             </h4>
@@ -116,12 +121,13 @@ const SubcategoryShopPage = () => {
                     </aside>
                     {/* Products Section */}
                     <div className="md:col-span-3">
-                        <div className="mt-4  mb-10 p-3 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
-                            <div className="flex justify-between items-center">
+                        <div className="mt-4 mb-8 p-4 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
                                 {/* Left side - view toggle */}
                                 <div className="flex items-center space-x-3">
                                     <button
-                                        className={`p-2 border rounded-md transition ${view === "grid"
+                                        aria-label="Grid view"
+                                        className={`p-3 border rounded-md transition ${view === "grid"
                                             ? "bg-black text-white border-black shadow"
                                             : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                                             }`}
@@ -130,7 +136,8 @@ const SubcategoryShopPage = () => {
                                         <FaTh />
                                     </button>
                                     <button
-                                        className={`p-2 border rounded-md transition ${view === "list"
+                                        aria-label="List view"
+                                        className={`p-3 border rounded-md transition ${view === "list"
                                             ? "bg-black text-white border-black shadow"
                                             : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                                             }`}
@@ -152,7 +159,7 @@ const SubcategoryShopPage = () => {
                                 {/* Sorting dropdown */}
                                 <div>
                                     <select
-                                        className="p-2 border rounded-md bg-gray-50 text-gray-700 text-sm hover:border-black transition"
+                                        className="w-full sm:w-auto p-3 border rounded-md bg-gray-50 text-gray-700 text-sm hover:border-orange-500 transition focus:outline-none focus:ring-2 focus:ring-orange-400"
                                         onChange={handleSortChange}
                                     >
                                         <option value="default">Default sorting</option>
@@ -167,9 +174,9 @@ const SubcategoryShopPage = () => {
                             isOpen={!!quickViewProduct}
                             onClose={() => setQuickViewProduct(null)}
                         />
-                        <div className={`grid ${view === "grid" ? "grid-cols-1 md:grid-cols-3 gap-6" : "grid-cols-1 gap-4"}`}>
+                        <div className={`grid ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" : "grid-cols-1 gap-5"}`}>
                             {currentProducts.map(product => (
-                                <ProductCard key={product.id} product={product} onQuickView={setQuickViewProduct} />
+                                <ProductCard key={product.id} product={product} view={view} onQuickView={setQuickViewProduct} />
                             ))}
                         </div>
                         {/* Pagination */}

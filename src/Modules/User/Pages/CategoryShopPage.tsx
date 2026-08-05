@@ -8,6 +8,7 @@ import Footer from "../Components/Footer";
 // import { products } from "../../products";
 import { Link, useParams } from "react-router-dom";
 import adminAxios from "../../Admin/Utils/axios";
+import shopImage from "../../../assets/shop.png";
 
 const CategoryShopPage = () => {
     const { categoryName } = useParams();
@@ -95,25 +96,29 @@ const CategoryShopPage = () => {
     return (
         <>
             <Header />
-            <div className="relative bg-cover bg-center h-[350px] flex flex-col justify-center items-center text-white" style={{ backgroundImage: `url('https://cycles-cauchois.fr/wp-content/uploads/2023/11/h1-bannernew-jpg.webp')` }}>
-                <h1 className="text-4xl font-bold">{categoryName}</h1>
-                <p className="mt-2 text-sm">Home &gt; Shop &gt; {categoryName}</p>
-                <div className="flex justify-center items-center mt-6 gap-6">
+            <div
+                className="relative flex h-[350px] flex-col items-center justify-center overflow-hidden bg-cover bg-center text-white"
+                style={{ backgroundImage: `url(${shopImage})` }}
+            >
+                <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/75 to-gray-950/20" />
+                <h1 className="relative z-10 text-4xl font-black">{categoryName}</h1>
+                <p className="relative z-10 mt-2 text-sm font-semibold">Home &gt; Shop &gt; {categoryName}</p>
+                <div className="relative z-10 mt-6 flex items-center justify-center gap-6">
                     {selectedCategory?.subcategories.map((sub, index) => (
                         <Link key={index} to={`/shop/${categoryName}/${sub.name}`} className="flex flex-col items-center group relative">
-                            <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-white flex justify-center items-center shadow-lg relative overflow-hidden">
+                            <div className="relative flex h-24 w-28 items-center justify-center overflow-hidden rounded-2xl border border-white/70 bg-white p-3 shadow-lg sm:h-28 sm:w-32 md:h-32 md:w-40">
                                 {/* Hover Border Effect */}
-                                <div className="absolute inset-0 w-full h-full rounded-full border-4 border-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                                <div className="absolute inset-0 h-full w-full rounded-2xl border-4 border-orange-500 opacity-0 transition-opacity duration-300 pointer-events-none group-hover:opacity-100"></div>
 
                                 {/* Category Image */}
                                 <img
                                     src={sub.image}
                                     alt={sub.name}
-                                    className="w-38 h-38 rounded-full object-contain"
+                                    className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
                                 />
 
                                 {/* Product Count on Hover */}
-                                <span className="absolute bottom-3 transform -translate-y-1/2 text-sm font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                <span className="absolute inset-x-3 bottom-3 rounded-full bg-white/95 px-2 py-1 text-center text-[10px] font-black uppercase tracking-wide text-gray-700 opacity-0 shadow-sm transition-opacity duration-300 group-hover:opacity-100 sm:text-xs">
                                     {sub.productCount} products
                                 </span>
                             </div>
@@ -126,12 +131,12 @@ const CategoryShopPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {/* Sidebar */}
                     <aside className="p-4 rounded-md md:col-span-1">
-                        <h3 className="text-lg font-bold flex items-center space-x-2  p-5 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
-                            <FaFilter /> <span>FILTER BY</span>
+                        <h3 className="text-lg font-bold flex items-center space-x-2 p-5 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                            <FaFilter className="text-orange-500" /> <span>FILTER BY</span>
                         </h3>
                         {/* Subcategories */}
                         {selectedCategory && (
-                            <div className="mt-6 p-5 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
+                            <div className="mt-6 p-5 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                                 <h4 className="font-semibold mb-3 text-gray-800">Subcategories</h4>
 
                                 <div className="space-y-2">
@@ -160,7 +165,7 @@ const CategoryShopPage = () => {
 
                         )}
 
-                        <div className="mt-6 p-5 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
+                        <div className="mt-6 p-5 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
                             <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-4 text-lg">
                                 Price
                             </h4>
@@ -197,12 +202,13 @@ const CategoryShopPage = () => {
                     </aside>
                     {/* Products Section */}
                     <div className="md:col-span-3">
-                        <div className="mt-4  mb-10 p-3 bg-white dark:bg-gray-900 shadow-md rounded-xl border border-gray-200 dark:border-gray-700">
-                            <div className="flex justify-between items-center">
+                        <div className="mt-4 mb-8 p-4 bg-white dark:bg-gray-900 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
                                 {/* Left side - view toggle */}
                                 <div className="flex items-center space-x-3">
                                     <button
-                                        className={`p-2 border rounded-md transition ${view === "grid"
+                                        aria-label="Grid view"
+                                        className={`p-3 border rounded-md transition ${view === "grid"
                                             ? "bg-black text-white border-black shadow"
                                             : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                                             }`}
@@ -211,7 +217,8 @@ const CategoryShopPage = () => {
                                         <FaTh />
                                     </button>
                                     <button
-                                        className={`p-2 border rounded-md transition ${view === "list"
+                                        aria-label="List view"
+                                        className={`p-3 border rounded-md transition ${view === "list"
                                             ? "bg-black text-white border-black shadow"
                                             : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                                             }`}
@@ -233,7 +240,7 @@ const CategoryShopPage = () => {
                                 {/* Sorting dropdown */}
                                 <div>
                                     <select
-                                        className="p-2 border rounded-md bg-gray-50 text-gray-700 text-sm hover:border-black transition"
+                                        className="w-full sm:w-auto p-3 border rounded-md bg-gray-50 text-gray-700 text-sm hover:border-orange-500 transition focus:outline-none focus:ring-2 focus:ring-orange-400"
                                         onChange={handleSortChange}
                                     >
                                         <option value="default">Default sorting</option>
@@ -248,9 +255,9 @@ const CategoryShopPage = () => {
                             isOpen={!!quickViewProduct}
                             onClose={() => setQuickViewProduct(null)}
                         />
-                        <div className={`grid ${view === "grid" ? "grid-cols-1 md:grid-cols-3 gap-6" : "grid-cols-1 gap-4"}`}>
+                        <div className={`grid ${view === "grid" ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6" : "grid-cols-1 gap-5"}`}>
                             {currentProducts.map(product => (
-                                <ProductCard key={product._id} product={product} onQuickView={setQuickViewProduct} />
+                                <ProductCard key={product._id} product={product} view={view} onQuickView={setQuickViewProduct} />
                             ))}
                         </div>
                         {/* Pagination */}

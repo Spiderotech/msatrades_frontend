@@ -1,93 +1,98 @@
-import React from "react";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaArrowRight, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/ChatGPT Image Jul 29, 2026, 04_36_38 AM.png";
 
 const Footer = () => {
-    const navigate = useNavigate();
-    return (
-        <div className="mx-auto container py-12 xl:px-20 lg:px-12 sm:px-6 px-4">
-            {/* Footer Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8 text-center sm:text-left">
-                {/* Logo */}
-                <div className="flex flex-col items-center sm:items-start">
-                    <svg width={120} height={30} viewBox="0 0 120 30">
-                        <text
-                            x="10"
-                            y="20"
-                            fontFamily="Arial, sans-serif"
-                            fontSize="20"
-                            fill="currentColor"
-                            fontWeight="bold"
-                        >
-                            MSAtrades
-                        </text>
-                    </svg>
-                    <img
-                        src={logo}
-                        alt="MSAtrades Logo"
-                        className="w-20 h-20 object-contain"
-                    />
-                </div>
+  const navigate = useNavigate();
 
-                {/* Company */}
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800">Company</h2>
-                    <p
-                        className="hover:text-orange-500 mt-4 cursor-pointer"
-                        onClick={() => navigate("/about-us")}
-                    >
-                        About Us
-                    </p>
-                    <p
-                        className="hover:text-orange-500 mt-3 cursor-pointer"
-                        onClick={() => navigate("/contact")}
-                    >
-                        Contact Us
-                    </p>
-                </div>
+  const linkClass = "text-left text-sm text-gray-300 transition hover:text-orange-400";
+  const goTo = (path: string) => {
+    navigate(path);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
-                {/* Support */}
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800">Support</h2>
-                    <p
-                        className="hover:text-orange-500 mt-4 cursor-pointer"
-                        onClick={() => navigate("/privacy-policy")}
-                    >
-                        Privacy Policy
-                    </p>
-                    <p
-                        className="hover:text-orange-500 mt-3 cursor-pointer"
-                        onClick={() => navigate("/terms-and-conditions")}
-                    >
-                        Terms of Service
-                    </p>
-                </div>
+  return (
+    <footer className="bg-gray-950 text-white">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[1.15fr_0.65fr_0.75fr_1fr]">
+          <div>
+            <button
+              type="button"
+              onClick={() => goTo("/")}
+              className="flex items-center"
+              aria-label="MSAtrades home"
+            >
+              <img src={logo} alt="MSAtrades Logo" className="h-14 w-52 object-contain object-left" />
+            </button>
+            <p className="mt-4 max-w-sm text-sm leading-6 text-gray-300">
+              Modern cycles, useful accessories, and spare parts with local catalog data and a
+              simple storefront experience.
+            </p>
+          </div>
 
-                {/* Newsletter */}
-                <div>
-                    <h2 className="text-lg font-semibold text-gray-800">Get Updates</h2>
-                    <div className="flex mt-8 border border-gray-300 rounded-lg overflow-hidden">
-                        <input
-                            type="email"
-                            className="w-full px-3 py-2 text-sm outline-none"
-                            placeholder="Enter your email"
-                        />
-                        <button className="bg-orange-500 px-4 py-2 text-white hover:bg-orange-600 transition">
-                            →
-                        </button>
-                    </div>
-                </div>
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-[0.18em] text-white">Company</h2>
+            <div className="mt-4 flex flex-col gap-2.5">
+              <button className={linkClass} onClick={() => goTo("/about-us")}>About Us</button>
+              <button className={linkClass} onClick={() => goTo("/contact")}>Contact Us</button>
+              <button className={linkClass} onClick={() => goTo("/shop")}>Shop</button>
             </div>
+          </div>
 
-            {/* Divider */}
-            <div className="mt-10 border-t border-gray-200 pt-6 text-center">
-                <p className="text-sm text-gray-600">
-                    Copyright © 2025 MSAtrades | All rights reserved MSAtrades
-                </p>
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-[0.18em] text-white">Support</h2>
+            <div className="mt-4 flex flex-col gap-2.5">
+              <button className={linkClass} onClick={() => goTo("/privacy-policy")}>Privacy Policy</button>
+              <button className={linkClass} onClick={() => goTo("/refund-policy")}>Refund Policy</button>
+              <button className={linkClass} onClick={() => goTo("/terms-and-conditions")}>Terms of Service</button>
             </div>
+          </div>
+
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-[0.18em] text-white">Get Updates</h2>
+            <p className="mt-4 text-sm leading-6 text-gray-300">
+              Receive product updates, category additions, and local storefront news.
+            </p>
+            <div className="mt-4 flex overflow-hidden rounded-md border border-white/10 bg-white">
+              <input
+                type="email"
+                className="min-w-0 flex-1 px-4 py-3 text-sm text-gray-900 outline-none"
+                placeholder="Enter your email"
+              />
+              <button
+                type="button"
+                className="grid w-12 place-items-center bg-orange-500 text-white transition hover:bg-orange-600"
+                aria-label="Subscribe"
+              >
+                <FaArrowRight />
+              </button>
+            </div>
+          </div>
         </div>
-    );
+
+        <div className="mt-8 grid gap-4 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-gray-300 md:grid-cols-[1fr_auto] md:items-center">
+          <div className="flex items-start gap-3">
+            <FaMapMarkerAlt className="mt-1 shrink-0 text-orange-400" />
+            <p className="leading-6">
+              <span className="font-bold text-white">Registered Office:</span>{" "}
+              113 Mellitus Street, London, England, W12 0AU
+            </p>
+          </div>
+          <a
+            className="flex items-center gap-3 font-semibold transition hover:text-orange-400"
+            href="mailto:contact@msatrades.com"
+          >
+            <FaEnvelope className="shrink-0 text-orange-400" />
+            contact@msatrades.com
+          </a>
+        </div>
+
+        <div className="mt-6 border-t border-white/10 pt-5 text-sm text-gray-400">
+          <p>© 2026 MSA Trades Ltd. All Rights Reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
 };
 
 export default Footer;

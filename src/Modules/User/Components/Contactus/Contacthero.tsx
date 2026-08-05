@@ -1,23 +1,27 @@
-import React from 'react'
+import contactImage from "../../../../assets/contact.png";
 
 const Contacthero = () => {
   return (
-    <section className="relative w-full h-[300px] md:h-[400px] lg:h-[400px] flex items-center justify-center text-white">
-    {/* Background Image */}
-    <div className="absolute inset-0 bg-[url('https://bikerumor.com/wp-content/uploads/2019/09/Titan-Racing-Cypher-full-suspension-mountain-bike-3.jpg')] bg-cover bg-center">
-      <div className="absolute inset-0  bg-opacity-50"></div>
-    </div>
+    <section className="relative flex min-h-[320px] w-full items-center overflow-hidden bg-gray-950 text-white">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-70"
+        style={{ backgroundImage: `url(${contactImage})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/80 to-gray-950/25" />
 
-    {/* Hero Content */}
-    <div className="relative z-10 text-center">
-      <h1 className="text-3xl md:text-5xl font-bold">Contact Us</h1>
-      <p className="text-lg mt-2">
-         <span className="text-white">Home</span> 
-        <span className="mx-2">›</span> 
-        <span className="text-white">Contact Us</span>
-      </p>
-    </div>
-  </section>
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <p className="text-sm font-black uppercase tracking-[0.28em] text-orange-400">
+          Contact Us
+        </p>
+        <h1 className="mt-4 max-w-3xl text-4xl font-black leading-tight sm:text-5xl">
+          Get in Touch
+        </h1>
+        <p className="mt-5 max-w-2xl text-lg leading-8 text-gray-200">
+          Whether you have a general enquiry, need customer support, or want to
+          discuss a business opportunity, our team is here to help.
+        </p>
+      </div>
+    </section>
   )
 }
 

@@ -1,78 +1,142 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { removeFromWishlist } from "../../Redux/reducer/wishlistSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { FaTrash } from "react-icons/fa";
+import { FaEye, FaHeart, FaShoppingBag, FaTrash } from "react-icons/fa";
+import { removeFromWishlist } from "../../Redux/reducer/wishlistSlice";
+import { addToCart } from "../../Redux/reducer/cartSlice";
+import { useState } from "react";
 
 const WishlistSection = () => {
+  const [stockNoticeId, setStockNoticeId] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const wishlistItems = useSelector((state) => state.wishlist.wishlistItems);
 
+  const getItemId = (item) => item._id || item.id;
+  const getItemPrice = (item) => item.basePrice ?? item.price ?? 0;
+
   const handleNavigateToDetails = (product) => {
     navigate(`/product/${product.name}`, {
-      state: { productId: product._id },
+      state: { productId: getItemId(product) },
     });
   };
 
-  return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h2 className="text-3xl font-bold mb-6 text-center">Your Wishlist</h2>
+  const handleAddToCart = (item) => {
+    if (Number(item.stock ?? 0) <= 0) {
+      setStockNoticeId(getItemId(item));
+      window.setTimeout(() => setStockNoticeId(null), 2500);
+      return;
+    }
 
-      {wishlistItems.length === 0 ? (
-        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-          <p className="text-lg font-semibold mb-4 text-gray-600">
-            Your wishlist is empty
-          </p>
+    dispatch(addToCart({ ...item, quantity: 1 }));
+  };
+
+  if (wishlistItems.length === 0) {
+    return (
+      <section className="bg-gray-50 py-14">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+          <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-4xl text-orange-500">
+              <FaHeart />
+            </div>
+            <h2 className="mt-5 text-3xl font-black text-gray-950">
+              Your wishlist is empty
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-gray-600">
+              Save products here while you compare cycles, accessories, and spare parts.
+            </p>
+            <button
+              className="mt-6 inline-flex items-center justify-center gap-3 rounded-lg bg-orange-500 px-6 py-3 text-sm font-black uppercase tracking-wide text-white shadow-sm transition hover:bg-orange-600"
+              onClick={() => navigate("/shop")}
+            >
+              <FaShoppingBag />
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="bg-gray-50 py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-orange-500">
+              Wishlist
+            </p>
+            <h2 className="mt-2 text-3xl font-black text-gray-950">
+              {wishlistItems.length} saved product{wishlistItems.length > 1 ? "s" : ""}
+            </h2>
+          </div>
           <button
-            className="bg-orange-500 hover:bg-orange-600 transition px-6 py-2 rounded-lg text-white font-medium shadow-md"
             onClick={() => navigate("/shop")}
+            className="rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-black text-gray-900 shadow-sm transition hover:border-orange-200 hover:text-orange-500"
           >
-            Continue Shopping
+            Explore More
           </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {wishlistItems.map((item) => (
-            <div
-              key={item._id}
-              className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer group transition-transform hover:scale-105"
-            >
-              {/* Product Image */}
-             <div className="relative flex items-center justify-center h-56 bg-gray-50">
 
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {wishlistItems.map((item) => {
+            return (
+            <article
+              key={getItemId(item)}
+              className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="relative flex aspect-square items-center justify-center bg-gray-50 p-5">
                 <img
                   src={item.images[0]}
                   alt={item.name}
-                  className="w-48 h-48  object-contain group-hover:scale-105 transition duration-300"
+                  className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
                 />
-                {/* Remove Button */}
                 <button
-                  className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md text-red-500 hover:bg-red-500 hover:text-white transition"
-                  onClick={() => dispatch(removeFromWishlist(item._id))}
+                  className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-red-500 shadow-sm transition hover:bg-red-500 hover:text-white"
+                  onClick={() => dispatch(removeFromWishlist(getItemId(item)))}
+                  type="button"
                 >
-                  <FaTrash size={16} />
+                  <FaTrash size={14} />
                 </button>
               </div>
 
-              {/* Product Info */}
-              <div className="p-4 text-center">
-                <h3 className="text-lg font-semibold truncate">{item.name}</h3>
-                <p className="text-gray-500 mt-1">£{item.basePrice}</p>
+              <div className="p-5">
+                <p className="text-xs font-black uppercase tracking-wide text-orange-500">
+                  Saved Item
+                </p>
+                <h3 className="mt-2 line-clamp-2 min-h-12 text-lg font-black leading-snug text-gray-950">
+                  {item.name}
+                </h3>
+                <p className="mt-2 text-2xl font-black text-orange-500">£{getItemPrice(item)}</p>
+                {stockNoticeId === getItemId(item) && (
+                  <p className="mt-3 rounded-md border border-orange-100 bg-orange-50 px-3 py-2 text-sm font-bold text-gray-800">
+                    This product is currently out of stock.
+                  </p>
+                )}
 
-                {/* View Button */}
-                <button
-                  className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition"
-                  onClick={() => handleNavigateToDetails(item)}
-                >
-                  View Product
-                </button>
+                <div className="mt-5 grid grid-cols-[1fr_48px] gap-3">
+                  <button
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-3 text-sm font-black uppercase tracking-wide text-white transition hover:bg-orange-600"
+                    onClick={() => handleAddToCart(item)}
+                    type="button"
+                  >
+                    <FaShoppingBag />
+                    Add
+                  </button>
+                  <button
+                    className="flex h-12 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-800 transition hover:border-orange-200 hover:text-orange-500"
+                    onClick={() => handleNavigateToDetails(item)}
+                    type="button"
+                  >
+                    <FaEye />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            </article>
+            );
+          })}
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 

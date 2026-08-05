@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useNavigate, useLocation } from "react-router-dom";
 import adminAxios from '../Utils/axios';
-import Axios from "../Utils/Service/axios";
+import { fileToDataUrl } from "../../localApi";
 
 const schema = yup.object().shape({
     name: yup.string().required("Product name is required"),
@@ -168,19 +168,7 @@ const Productedit = () => {
 
         for (const image of images) {
             try {
-                const s3Res = await Axios.get("/s3service");
-                const uploadUrl = s3Res.data.response;
-
-                await fetch(uploadUrl, {
-                    method: "PUT",
-                    body: image,
-                    headers: {
-                        "Content-Type": image.type,
-                    },
-                });
-
-                const imageUrl = uploadUrl.split("?")[0];
-                uploadedUrls.push(imageUrl);
+                uploadedUrls.push(await fileToDataUrl(image));
             } catch (error) {
                 console.error("Error uploading image:", error);
                 throw new Error("Failed to upload images");

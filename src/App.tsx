@@ -19,6 +19,7 @@ const Whishlistpage = lazy(() => import("./Modules/User/Pages/Whishlistpage"));
 const OrderSuccess = lazy(() => import("./Modules/User/Pages/OrderSuccess"));
 const Privacypolicypage = lazy(() => import("./Modules/User/Pages/Privacypolicypage"));
 const Terms_and_condtionpage = lazy(() => import("./Modules/User/Pages/Terms_and_condtionpage"));
+const RefundPolicypage = lazy(() => import("./Modules/User/Pages/RefundPolicypage"));
 
 // ✅ Lazy load admin pages
 const Dashboard = lazy(() => import("./Modules/Admin/Pages/Dashboard"));
@@ -47,6 +48,7 @@ function App() {
           <Route path="/about-us" element={<AboutUspage />} />
           <Route path="/contact" element={<Contactpage />} />
           <Route path="/privacy-policy" element={<Privacypolicypage />} />
+          <Route path="/refund-policy" element={<RefundPolicypage />} />
           <Route path="/terms-and-conditions" element={<Terms_and_condtionpage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/shop/:categoryName" element={<CategoryShopPage />} />

@@ -1,26 +1,25 @@
-import React from "react";
 import { motion } from "framer-motion";
+
+const messages = [
+  "UK cycle products and support",
+  "Cycles, accessories, and spare parts",
+  "Contact: contact@msatrades.com",
+];
 
 const Headerpromo = () => {
   return (
-    <div className="w-full bg-orange-500 py-2 overflow-hidden">
+    <div className="w-full overflow-hidden border-b border-orange-400/30 bg-gray-950 py-2">
       <motion.div
-        className="text-white font-semibold whitespace-nowrap flex"
-        animate={{ x: ["100%", "-100%"] }}
-        transition={{ repeat: Infinity, duration: 13, ease: "linear" }}
+        className="flex whitespace-nowrap text-xs font-black uppercase tracking-[0.22em] text-white sm:text-sm"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ repeat: Infinity, duration: 22, ease: "linear" }}
       >
-        <span className="mr-16">
-           Premium Bicycles & Accessories – Delivered Anywhere in UK! Ride
-          the Trend, Shop Now! 
-        </span>
-        <span className="mr-16">
-          Free Bike Assembly & Hassle-Free Delivery! Explore MTB, Hybrid &
-          Road Cycles Today!
-        </span>
-        <span className="mr-16">
-           Exclusive Discounts on Gear & Cycling Essentials! Grab Yours
-          Before Stock Runs Out!
-        </span>
+        {[...messages, ...messages].map((message, index) => (
+          <span key={`${message}-${index}`} className="mr-10 inline-flex items-center gap-3">
+            <span className="h-2 w-2 rounded-full bg-orange-500" />
+            {message}
+          </span>
+        ))}
       </motion.div>
     </div>
   );

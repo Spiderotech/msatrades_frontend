@@ -3,7 +3,7 @@ import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import adminAxios from '../Utils/axios';
-import Axios from "../Utils/Service/axios";
+import { fileToDataUrl } from "../../localApi";
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const schema = yup.object().shape({
@@ -105,16 +105,7 @@ const CategoryEdit = () => {
             let imageUrl;
 
             if (data.image instanceof File) {
-                const s3Res = await Axios.get('/s3service');
-                const uploadUrl = s3Res.data.response;
-
-                await fetch(uploadUrl, {
-                    method: 'PUT',
-                    body: data.image,
-                    headers: { 'Content-Type': data.image.type },
-                });
-
-                imageUrl = uploadUrl.split('?')[0];
+                imageUrl = await fileToDataUrl(data.image);
             }
 
             const body = {

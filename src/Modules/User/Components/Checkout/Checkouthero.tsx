@@ -1,23 +1,23 @@
-import React from 'react'
-
 const Checkouthero = () => {
   return (
-    <section className="relative w-full h-[300px] md:h-[400px] lg:h-[400px] flex items-center justify-center text-white">
-    {/* Background Image */}
-    <div className="absolute inset-0 bg-[url('https://cycles-cauchois.fr/wp-content/uploads/2023/11/h1-bannernew-jpg.webp')] bg-cover bg-center">
-      <div className="absolute inset-0  bg-opacity-50"></div>
-    </div>
-
-    {/* Hero Content */}
-    <div className="relative z-10 text-center">
-      <h1 className="text-3xl md:text-5xl font-bold">Checkout</h1>
-      <p className="text-lg mt-2">
-        <span className="text-white">Home</span> 
-        <span className="mx-2">›</span> 
-        <span className="text-white">Checkout</span>
-      </p>
-    </div>
-  </section>
+    <section className="relative flex min-h-[260px] items-center overflow-hidden bg-gray-950 text-white">
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-30"
+        style={{ backgroundImage: "url('/catalog/products/metro-glide-hybrid-cycle.png')" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/85 to-gray-950/40" />
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <p className="text-sm font-black uppercase tracking-[0.28em] text-orange-400">
+          Checkout
+        </p>
+        <h1 className="mt-3 text-4xl font-black leading-tight sm:text-5xl">
+          Complete Your Order
+        </h1>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-gray-200">
+          Add your billing details and choose how you would like to pay.
+        </p>
+      </div>
+    </section>
   )
 }
 

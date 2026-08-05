@@ -1,10 +1,3 @@
-import axios from "axios";
-import { baseUrl } from "./constant";
+import localApi from "../../localApi";
 
-const adminAxios = axios.create({
-  baseURL: baseUrl,
-  headers: {
-    "Content-Type": "application/json"
-  }
-});
-export default adminAxios;
+export default localApi;

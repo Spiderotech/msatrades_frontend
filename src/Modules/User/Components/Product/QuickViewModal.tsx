@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaHeart, FaTimes } from "react-icons/fa";
 import { FiMinus, FiPlus } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,146 +7,190 @@ import { addToCart } from "../../Redux/reducer/cartSlice";
 import { removeFromWishlist, addToWishlist } from "../../Redux/reducer/wishlistSlice";
 
 const QuickViewModal = ({ product, isOpen, onClose }) => {
-  if (!isOpen || !product) return null;
-
   const [quantity, setQuantity] = useState(1);
+  const [stockNotice, setStockNotice] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart.cartItems);
   const wishlistItems = useSelector((state) => state.wishlist.wishlistItems);
 
-  const isInCart = cartItems.some((item) => item._id === product._id);
-  const isInWishlist = wishlistItems.some((item) => item._id === product._id);
+  if (!isOpen || !product) return null;
+
+  const productId = product._id || product.id;
+  const price = product.basePrice || product.price;
+  const categoryName = product.category?.name || product.category;
+  const subcategoryName = product.subcategory?.name || product.subcategory;
+  const description = product.description || product.shortDescription || product.detailedDescription;
+  const isInCart = cartItems.some((item) => (item._id || item.id) === productId);
+  const isInWishlist = wishlistItems.some((item) => (item._id || item.id) === productId);
+  const isOutOfStock = Number(product.stock ?? 0) <= 0;
 
   const handleAddToCart = () => {
-    if (!isInCart) {
+    if (isOutOfStock) {
+      setStockNotice(true);
+      window.setTimeout(() => setStockNotice(false), 2500);
+      return;
+    }
+    if (!isInCart && !isOutOfStock) {
       dispatch(addToCart({ ...product, quantity }));
     }
   };
 
   const handleToggleWishlist = () => {
     if (isInWishlist) {
-      dispatch(removeFromWishlist(product._id));
+      dispatch(removeFromWishlist(productId));
     } else {
       dispatch(addToWishlist(product));
     }
   };
 
   const handleBuyNow = () => {
-    if (!isInCart) {
-      dispatch(addToCart({ ...product, quantity }));
+    if (isOutOfStock) {
+      setStockNotice(true);
+      window.setTimeout(() => setStockNotice(false), 2500);
+      return;
     }
-    navigate("/checkout");
+    if (!isInCart && !isOutOfStock) {
+      dispatch(addToCart({ ...product, quantity }));
+      navigate("/checkout");
+    }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50 px-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-[95%] md:max-w-4xl w-full flex flex-col md:flex-row relative overflow-hidden max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6">
+      <div
+        className="relative flex max-h-[86vh] overflow-y-auto rounded-lg bg-white shadow-2xl"
+        style={{ width: "min(92vw, 720px)" }}
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-600 text-2xl z-10"
+          className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white text-gray-700 shadow-md transition hover:bg-gray-950 hover:text-white"
+          aria-label="Close product quick view"
         >
           <FaTimes />
         </button>
 
-        {/* Left Side - Product Image */}
-        <div className="w-full md:w-1/2 flex justify-center items-center bg-gray-100 p-4">
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="max-h-80 object-contain"
-          />
+        <div className="hidden w-[280px] shrink-0 bg-gray-50 p-4 md:block">
+          <div className="relative flex h-[300px] items-center justify-center overflow-hidden rounded-lg border border-gray-200 bg-white">
+            <span
+              className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm ${
+                isOutOfStock ? "bg-gray-600" : "bg-orange-500"
+              }`}
+            >
+              {isOutOfStock ? "Out of Stock" : "In Stock"}
+            </span>
+            <img
+              src={product.images?.[0]}
+              alt={product.name}
+              className="h-full max-h-[250px] w-full object-contain p-5"
+            />
+          </div>
         </div>
 
-        {/* Right Side - Product Details */}
-        <div className="w-full md:w-1/2 p-6">
-          <h1 className="text-2xl font-bold">{product.name}</h1>
-          <div className="text-2xl font-bold text-gray-900 mt-3">
-            £{product.basePrice}
+        <div className="min-w-0 flex-1 p-4 md:p-5">
+          <div className="mb-4 flex h-56 items-center justify-center rounded-lg border border-gray-200 bg-gray-50 md:hidden">
+            <img
+              src={product.images?.[0]}
+              alt={product.name}
+              className="h-full max-h-48 w-full object-contain p-4"
+            />
           </div>
-          <p className="text-gray-700 mt-4">{product.description}</p>
 
-          {/* Stock Info */}
-          <div className="mt-4">
-            <span className="font-semibold">AVAILABLE: </span>
-            {product.stock === 0 ? (
-              <span className="text-red-600">Out of Stock ❌</span>
-            ) : product.stock < 5 ? (
-              <span className="text-orange-500">
-                Few items left ({product.stock}) ⚠️
+          <div className="flex flex-wrap gap-2 pr-10">
+            <span className="rounded-full bg-orange-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-orange-600">
+              {categoryName}
+            </span>
+            {subcategoryName && (
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-gray-600">
+                {subcategoryName}
               </span>
-            ) : (
-              <span className="text-green-600">{product.stock} ✅</span>
             )}
           </div>
 
-          {/* Category */}
-          <div className="mt-2">
-            <span className="font-semibold">CATEGORY: </span>
-            {product.category.name}
+          <h1 className="mt-2 text-lg font-black leading-tight text-gray-950 sm:text-xl">
+            {product.name}
+          </h1>
+          {stockNotice && (
+            <div className="mt-3 rounded-md border border-orange-100 bg-orange-50 px-3 py-2 text-sm font-bold text-gray-800">
+              This product is currently out of stock.
+            </div>
+          )}
+          <div className="mt-1 text-2xl font-black text-orange-500">£{price}</div>
+          <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-600">{description}</p>
+
+          <div className="mt-3 rounded-md border border-gray-200 bg-gray-50 px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <span className="block text-sm font-bold text-gray-900">Quantity</span>
+                <span className="block text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                  {isOutOfStock ? "Unavailable" : "Ready to add"}
+                </span>
+              </div>
+              <div className="flex h-10 shrink-0 items-center overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+                <button
+                  type="button"
+                  className="grid h-10 w-10 place-items-center text-gray-800 transition hover:bg-orange-50 hover:text-orange-500 disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
+                >
+                  <FiMinus />
+                </button>
+                <span className="grid h-10 min-w-11 place-items-center border-x border-gray-200 px-3 text-base font-black text-gray-950">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  className="grid h-10 w-10 place-items-center text-gray-800 transition hover:bg-orange-50 hover:text-orange-500"
+                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  disabled={isOutOfStock || quantity >= product.stock}
+                  aria-label="Increase quantity"
+                >
+                  <FiPlus />
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Quantity + Buttons */}
-          <div className="flex flex-wrap items-center gap-3 mt-6">
+          <div
+            className="mt-3"
+            style={{ display: "flex", alignItems: "center", gap: "8px" }}
+          >
             <button
-              className="border px-3 py-3 rounded-full"
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            >
-              <FiMinus />
-            </button>
-            <span className="text-lg font-bold">{quantity}</span>
-            <button
-              className="border px-3 py-3 rounded-full"
-              onClick={() => setQuantity(quantity + 1)}
-            >
-              <FiPlus />
-            </button>
-
-            <button
+              type="button"
               onClick={handleAddToCart}
-              disabled={isInCart || product.stock === 0}
-              className={`flex-1 min-w-[150px] px-6 py-3 rounded-full font-bold transition ${
-                isInCart || product.stock === 0
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-gray-200 hover:bg-gray-300"
+              disabled={isInCart}
+              className={`flex-1 rounded-md px-3 py-2 text-sm font-bold transition ${
+                isInCart
+                  ? "cursor-not-allowed bg-gray-300 text-gray-600"
+                  : "bg-gray-950 text-white hover:bg-orange-500"
               }`}
             >
-              {product.stock === 0
-                ? "OUT OF STOCK"
-                : isInCart
-                ? "IN CART"
-                : "ADD TO BAG"}
+              {isInCart ? "IN CART" : "ADD TO BAG"}
             </button>
 
             <button
+              type="button"
               onClick={handleToggleWishlist}
-              className={`p-3 border rounded-full transition ${
+              className={`grid h-9 w-9 place-items-center rounded-md border transition ${
                 isInWishlist
-                  ? "bg-red-500"
-                  : "bg-gray-200 hover:bg-orange-400"
+                  ? "border-orange-500 bg-orange-500 text-white"
+                  : "border-gray-200 bg-gray-100 text-gray-900 hover:bg-orange-500 hover:text-white"
               }`}
+              aria-label="Toggle wishlist"
             >
-              <FaHeart
-                className={isInWishlist ? "text-white" : "text-black"}
-              />
+              <FaHeart />
             </button>
           </div>
 
-          {/* Buy Now */}
-          <div className="flex flex-col mt-6 space-y-3">
-            <button
-              onClick={handleBuyNow}
-              disabled={product.stock === 0}
-              className={`w-full px-6 py-3 rounded-full font-bold border transition ${
-                product.stock === 0
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-white text-black hover:bg-gray-100"
-              }`}
-            >
-              {product.stock === 0 ? "OUT OF STOCK" : "BUY IT NOW"}
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            className="mt-2 w-full rounded-md border border-orange-500 bg-white px-3 py-2 text-sm font-bold text-gray-950 transition hover:bg-orange-500 hover:text-white"
+          >
+            BUY NOW
+          </button>
         </div>
       </div>
     </div>

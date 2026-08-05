@@ -1,19 +1,25 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useState } from "react";
+import { useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import {
+  FaCheckCircle,
+  FaCreditCard,
+  FaExclamationTriangle,
+  FaLock,
+  FaShoppingBag,
+  FaTimes,
+  FaTruck,
+} from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import Checkouthero from "../Components/Checkout/Checkouthero";
 import SuggestedProducts from "../Components/Product/SuggestedProducts";
-import adminAxios from "../../Admin/Utils/axios";
-import { clearCart } from "../Redux/reducer/cartSlice";
-import { useNavigate } from "react-router-dom";
 
-// The schema remains the same
 const schema = yup.object().shape({
   firstName: yup.string().required("First Name is required"),
   lastName: yup.string().required("Last Name is required"),
@@ -27,23 +33,30 @@ const schema = yup.object().shape({
   agreeTerms: yup.bool().oneOf([true], "You must agree to the terms"),
 });
 
+const inputClass =
+  "w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-900 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100";
+
+const errorClass = "mt-1 text-xs font-semibold text-red-500";
+
 function Checkoutpage() {
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const getItemId = (item) => item._id || item.id;
+  const getItemPrice = (item) => item.basePrice ?? item.price ?? 0;
   const totalAmount = cartItems.reduce(
-    (acc, item) => acc + item.basePrice * item.quantity,
+    (acc, item) => acc + getItemPrice(item) * item.quantity,
     0
   );
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const [phone, setPhone] = useState("");
+  const [paymentNotice, setPaymentNotice] = useState(null);
 
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -51,139 +64,153 @@ function Checkoutpage() {
       lastName: "",
       address: "",
       city: "",
-      country: "",
+      country: "United Kingdom",
       postCode: "",
       email: "",
       phone: "",
-      paymentMethod: "", // Default to empty to force a selection
+      paymentMethod: "",
       agreeTerms: false,
     },
   });
 
-  const onSubmit = async (formData) => {
-    const orderData = {
-      products: cartItems.map((item) => ({
-        productId: item._id,
-        quantity: item.quantity,
-      })),
-      totalAmount,
-      paymentMethod: formData.paymentMethod,
-      billingDetails: {
-        ...formData,
-        phone,
-      },
-      paymentStatus: formData.paymentMethod === "Cash on Delivery" ? "Pending" : "Paid",
-    };
+  const selectedPayment = watch("paymentMethod");
+  const isOnlinePayment = selectedPayment && selectedPayment !== "Cash on Delivery";
 
-    try {
-      const response = await adminAxios.post("/add-neworder", orderData);
-      if (response.data.orderdata.success) {
-        alert("Order placed successfully!");
-        dispatch(clearCart());
-        navigate("/order-success");
-      } else {
-        throw new Error("Failed to place order");
-      }
-    } catch (error) {
-      console.error("Order error:", error);
-      alert("Something went wrong while placing the order.");
+  const onSubmit = async (formData) => {
+    setPaymentNotice(null);
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+
+    if (formData.paymentMethod === "Cash on Delivery") {
+      setPaymentNotice({
+        title: "Cash on Delivery Unavailable",
+        message:
+          "Cash on Delivery service is currently unreachable. Please try again after some time or select another payment method.",
+      });
+      return;
     }
+
+    setPaymentNotice({
+      title: "Payment Redirect Unavailable",
+      message:
+        "We could not connect to the payment gateway right now. Your order has not been placed. Please try again after some time.",
+    });
   };
+
+  if (cartItems.length === 0) {
+    return (
+      <>
+        <Header />
+        <Checkouthero />
+        <section className="bg-gray-50 py-14">
+          <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+            <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
+              <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-4xl text-orange-500">
+                <FaShoppingBag />
+              </div>
+              <h2 className="mt-5 text-3xl font-black text-gray-950">
+                Your cart is empty
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-gray-600">
+                Add a product to your bag before starting checkout.
+              </p>
+              <button
+                className="mt-6 rounded-lg bg-orange-500 px-6 py-3 text-sm font-black uppercase tracking-wide text-white transition hover:bg-orange-600"
+                onClick={() => navigate("/shop")}
+                type="button"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
       <Checkouthero />
-      <div className="bg-gray-50 py-12">
+      <main className="bg-gray-50 py-12">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="container mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-3 gap-8"
+          className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-[1fr_390px] lg:px-8"
         >
-          {/* Left Section: Billing Details */}
-          <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-lg shadow-md">
-            <h2 className="text-3xl font-bold mb-6 text-gray-800">Billing Details</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              {/* First Name */}
+          <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                <input
-                  id="firstName"
-                  {...register("firstName")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="text"
-                />
-                {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName.message}</p>}
+                <p className="text-sm font-black uppercase tracking-[0.22em] text-orange-500">
+                  Billing Details
+                </p>
+                <h2 className="mt-2 text-3xl font-black text-gray-950">
+                  Delivery information
+                </h2>
               </div>
-              {/* Last Name */}
+              <div className="hidden h-12 w-12 items-center justify-center rounded-lg bg-gray-950 text-orange-400 sm:flex">
+                <FaTruck />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-x-5 gap-y-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                <input
-                  id="lastName"
-                  {...register("lastName")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="text"
-                />
-                {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName.message}</p>}
+                <label htmlFor="firstName" className="mb-1 block text-sm font-black text-gray-700">
+                  First Name *
+                </label>
+                <input id="firstName" {...register("firstName")} className={inputClass} type="text" />
+                {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
               </div>
-              {/* Street Address */}
+
+              <div>
+                <label htmlFor="lastName" className="mb-1 block text-sm font-black text-gray-700">
+                  Last Name *
+                </label>
+                <input id="lastName" {...register("lastName")} className={inputClass} type="text" />
+                {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
+              </div>
+
               <div className="sm:col-span-2">
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
-                <input
-                  id="address"
-                  {...register("address")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="text"
-                />
-                {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>}
+                <label htmlFor="address" className="mb-1 block text-sm font-black text-gray-700">
+                  Street Address *
+                </label>
+                <input id="address" {...register("address")} className={inputClass} type="text" />
+                {errors.address && <p className={errorClass}>{errors.address.message}</p>}
               </div>
-              {/* City */}
+
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">Town / City *</label>
-                <input
-                  id="city"
-                  {...register("city")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="text"
-                />
-                {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>}
+                <label htmlFor="city" className="mb-1 block text-sm font-black text-gray-700">
+                  Town / City *
+                </label>
+                <input id="city" {...register("city")} className={inputClass} type="text" />
+                {errors.city && <p className={errorClass}>{errors.city.message}</p>}
               </div>
-              {/* Country */}
+
               <div>
-                <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                <input
-                  id="country"
-                  {...register("country")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="text"
-                />
-                {errors.country && <p className="text-red-500 text-sm mt-1">{errors.country.message}</p>}
+                <label htmlFor="country" className="mb-1 block text-sm font-black text-gray-700">
+                  Country *
+                </label>
+                <input id="country" {...register("country")} className={inputClass} type="text" />
+                {errors.country && <p className={errorClass}>{errors.country.message}</p>}
               </div>
-              {/* Post Code */}
+
               <div>
-                <label htmlFor="postCode" className="block text-sm font-medium text-gray-700 mb-1">Post Code *</label>
-                <input
-                  id="postCode"
-                  {...register("postCode")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="text"
-                />
-                {errors.postCode && <p className="text-red-500 text-sm mt-1">{errors.postCode.message}</p>}
+                <label htmlFor="postCode" className="mb-1 block text-sm font-black text-gray-700">
+                  Post Code *
+                </label>
+                <input id="postCode" {...register("postCode")} className={inputClass} type="text" />
+                {errors.postCode && <p className={errorClass}>{errors.postCode.message}</p>}
               </div>
-              {/* Email */}
+
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                <input
-                  id="email"
-                  {...register("email")}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  type="email"
-                />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+                <label htmlFor="email" className="mb-1 block text-sm font-black text-gray-700">
+                  Email Address *
+                </label>
+                <input id="email" {...register("email")} className={inputClass} type="email" />
+                {errors.email && <p className={errorClass}>{errors.email.message}</p>}
               </div>
-              {/* Phone Number with Country Code Selection */}
-              {/* Phone Number with Country Code Selection */}
+
               <div className="sm:col-span-2">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="phone" className="mb-1 block text-sm font-black text-gray-700">
                   Phone Number *
                 </label>
                 <PhoneInput
@@ -194,76 +221,159 @@ function Checkoutpage() {
                     setValue("phone", value, { shouldValidate: true });
                   }}
                   inputProps={{ name: "phone", required: true, id: "phone" }}
-                  containerClass="w-full"
-                  inputClass="w-full p-6 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
-                  buttonClass="!border !border-gray-300 !rounded-lg !bg-gray-50 hover:!bg-gray-100"
+                  containerClass="!w-full"
+                  inputClass="!h-[48px] !w-full !rounded-lg !border !border-gray-200 !pl-14 !text-sm !font-semibold !text-gray-900 focus:!border-orange-500"
+                  buttonClass="!rounded-l-lg !border !border-gray-200 !bg-gray-50 hover:!bg-gray-100"
                   dropdownClass="!rounded-lg"
                 />
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>}
+                {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Right Section: Order Summary & Payment */}
-          <div className="bg-gray-100 p-6 md:p-8 rounded-lg shadow-md lg:col-span-1">
-            <h2 className="text-2xl font-bold mb-6 text-gray-800">Your Order</h2>
-            <div className="border-b border-gray-300 pb-4 space-y-3">
+          <aside className="h-fit rounded-lg border border-gray-200 bg-white p-6 shadow-sm lg:sticky lg:top-28">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.22em] text-orange-500">
+                  Your Order
+                </p>
+                <h2 className="mt-2 text-2xl font-black text-gray-950">Summary</h2>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gray-950 text-orange-400">
+                <FaLock />
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3 border-b border-gray-200 pb-5">
               {cartItems.map((item) => (
-                <div key={item.id} className="flex justify-between text-base text-gray-700">
-                  <span>{item.name} × {item.quantity}</span>
-                  <span>£{(item.basePrice * item.quantity).toFixed(2)}</span>
+                <div key={getItemId(item)} className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
+                    <img src={item.images[0]} alt={item.name} className="h-11 w-11 object-contain" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-black text-gray-950">{item.name}</p>
+                    <p className="text-xs font-bold text-gray-500">Qty {item.quantity}</p>
+                  </div>
+                  <p className="text-sm font-black text-gray-950">
+                    £{(getItemPrice(item) * item.quantity).toFixed(2)}
+                  </p>
                 </div>
               ))}
             </div>
-            <div className="flex justify-between font-bold mt-4 text-xl">
-              <span className="text-gray-800">Total:</span>
-              <span className="text-orange-500">£{totalAmount.toFixed(2)}</span>
+
+            <div className="mt-5 space-y-3">
+              <div className="flex justify-between text-sm font-bold text-gray-600">
+                <span>Subtotal</span>
+                <span>£{totalAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-gray-600">
+                <span>Delivery</span>
+                <span>Calculated after review</span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-4 text-xl font-black text-gray-950">
+                <span>Total</span>
+                <span className="text-orange-500">£{totalAmount.toFixed(2)}</span>
+              </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">Payment Method *</h3>
-              <div className="space-y-3">
-                {['Cash on Delivery', 'UPI', 'Credit Card', 'PayPal'].map(method => (
-                  <label key={method} className="flex items-center gap-3 cursor-pointer text-gray-700">
+            <div className="mt-7">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-gray-900">
+                <FaCreditCard className="text-orange-500" />
+                Payment Method *
+              </h3>
+              <div className="space-y-2">
+                {["Cash on Delivery", "Credit Card", "PayPal", "Bank Transfer"].map((method) => (
+                  <label
+                    key={method}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-bold text-gray-700 transition hover:border-orange-200 hover:bg-orange-50"
+                  >
                     <input
                       type="radio"
                       {...register("paymentMethod")}
                       value={method}
-                      className="form-radio h-5 w-5 text-orange-500"
+                      className="h-4 w-4 accent-orange-500"
                     />
-                    <span className="text-base">{method}</span>
+                    <span>{method}</span>
                   </label>
                 ))}
               </div>
-              {errors.paymentMethod && <p className="text-red-500 text-sm mt-2">{errors.paymentMethod.message}</p>}
+              {errors.paymentMethod && <p className={errorClass}>{errors.paymentMethod.message}</p>}
             </div>
 
-            {/* Terms and Conditions */}
             <div className="mt-6">
-              <label className="flex items-center">
+              <label className="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
                 <input
                   type="checkbox"
                   {...register("agreeTerms")}
-                  className="form-checkbox h-4 w-4 text-orange-500 rounded"
+                  className="mt-1 h-4 w-4 rounded accent-orange-500"
                 />
-                <span className="ml-2 text-sm text-gray-600">
-                  I have read and agree to the <a href="#" className="text-orange-500 hover:underline">terms and conditions</a>.
+                <span className="text-sm leading-6 text-gray-600">
+                  I have read and agree to the{" "}
+                  <Link to="/terms-and-conditions" className="font-black text-orange-500 hover:text-orange-600">
+                    terms and conditions
+                  </Link>
+                  .
                 </span>
               </label>
-              {errors.agreeTerms && <p className="text-red-500 text-sm mt-1">{errors.agreeTerms.message}</p>}
+              {errors.agreeTerms && <p className={errorClass}>{errors.agreeTerms.message}</p>}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
-              className="bg-orange-500 hover:bg-orange-600 text-white w-full py-4 mt-8 rounded-lg font-bold shadow-md transition-all duration-300 transform hover:scale-105"
+              disabled={isSubmitting}
+              className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-lg bg-orange-500 px-6 py-4 text-sm font-black uppercase tracking-wide text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-300"
             >
-              Place Order
+              <FaCheckCircle />
+              {isSubmitting
+                ? isOnlinePayment
+                  ? "Redirecting To Payment..."
+                  : "Checking Service..."
+                : "Place Order"}
             </button>
-          </div>
+          </aside>
         </form>
-      </div>
+      </main>
+
+      {paymentNotice && (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-950/60 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-lg border border-orange-100 bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-500">
+                <FaExclamationTriangle />
+              </div>
+              <button
+                type="button"
+                onClick={() => setPaymentNotice(null)}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition hover:bg-gray-950 hover:text-white"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <h2 className="mt-5 text-2xl font-black text-gray-950">
+              {paymentNotice.title}
+            </h2>
+            <p className="mt-3 text-sm leading-7 text-gray-600">
+              {paymentNotice.message}
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setPaymentNotice(null)}
+                className="rounded-lg bg-orange-500 px-5 py-3 text-sm font-black uppercase tracking-wide text-white transition hover:bg-orange-600"
+              >
+                Try Again
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/contact")}
+                className="rounded-lg border border-gray-200 bg-white px-5 py-3 text-sm font-black uppercase tracking-wide text-gray-900 transition hover:border-orange-200 hover:text-orange-500"
+              >
+                Contact Support
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SuggestedProducts />
       <Footer />
